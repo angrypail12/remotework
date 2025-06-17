@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chicago Study & Work Spaces</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .search-box, .filter-select {
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .search-box:focus, .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .filter-select {
+            min-width: 150px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 1200px;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        th {
+            padding: 18px 12px;
+            text-align: left;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            transition: background-color 0.3s ease;
+        }
+        
+        th:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        th.sortable::after {
+            content: '⇅';
+            position: absolute;
+            right: 8px;
+            opacity: 0.5;
+            font-size: 12px;
+        }
+        
+        th.sort-asc::after {
+            content: '↑';
+            opacity: 1;
+            color: #ffd700;
+        }
+        
+        th.sort-desc::after {
+            content: '↓';
+            opacity: 1;
+            color: #ffd700;
+        }
+        
+        td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #f1f3f4;
+            vertical-align: top;
+        }
+        
+        tr:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+        
+        .category {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .category.free { background: #d4edda; color: #155724; }
+        .category.budget { background: #fff3cd; color: #856404; }
+        .category.premium { background: #f8d7da; color: #721c24; }
+        .category.museum { background: #e2e3f1; color: #383d3b; }
+        
+        .price {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .distance {
+            font-weight: 600;
+            color: #27ae60;
+        }
+        
+        .amenities {
+            max-width: 200px;
+            line-height: 1.4;
+        }
+        
+        .rating {
+            color: #f39c12;
+            font-weight: 600;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            min-width: 120px;
+        }
+        
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #667eea;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 4px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .search-box, .filter-select {
+                width: 100%;
+            }
+            
+            .stats {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Study & Work Spaces Near You</h1>
+        <p class="subtitle">All options within 5 miles of 3614 N Lakewood Ave, Chicago</p>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <span class="stat-number" id="totalCount">0</span>
+                <div class="stat-label">Total Options</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="freeCount">0</span>
+                <div class="stat-label">Free Options</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="avgDistance">0</span>
+                <div class="stat-label">Avg Distance</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <input type="text" class="search-box" id="searchBox" placeholder="Search by name, amenities, or location...">
+            <select class="filter-select" id="categoryFilter">
+                <option value="">All Categories</option>
+                <option value="free">Free</option>
+                <option value="budget">Budget</option>
+                <option value="premium">Premium</option>
+                <option value="museum">Museum</option>
+            </select>
+            <select class="filter-select" id="distanceFilter">
+                <option value="">All Distances</option>
+                <option value="1">Under 1 mile</option>
+                <option value="2">Under 2 miles</option>
+                <option value="3">Under 3 miles</option>
+            </select>
+        </div>
+        
+        <div class="table-container">
+            <table id="spacesTable">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-column="name">Name</th>
+                        <th class="sortable" data-column="category">Category</th>
+                        <th class="sortable" data-column="distance">Distance</th>
+                        <th class="sortable" data-column="price">Price</th>
+                        <th class="sortable" data-column="hours">Hours</th>
+                        <th>Key Amenities</th>
+                        <th>Why It's Great</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const spaces = [
+            {
+                name: "Capital One Cafe Southport",
+                category: "free",
+                distance: 0.4,
+                price: "Free (coffee purchase encouraged)",
+                hours: "Mon-Fri 7am-7pm, Sat-Sun 9am-6pm",
+                amenities: "Free WiFi, Outlets, Community room, Verve Coffee, 50% off drinks for Capital One customers",
+                whyGreat: "Closest option! Designed as coworking space, free community meeting room, professional environment",
+                address: "3540 N Southport Ave"
+            {
+                name: "Doppio Coffee House",
+                category: "budget",
+                distance: 0.6,
+                price: "$5-15/day",
+                hours: "Daily 7am-4pm",
+                amenities: "Local coffee roaster, Neighborhood feel, Good seating",
+                whyGreat: "Local independent roaster, authentic neighborhood atmosphere",
+                address: "3054 N Greenview Ave"
+            },
+            {
+                name: "Starbucks Clark & Belmont",
+                category: "budget",
+                distance: 0.5,
+                price: "$5-15/day",
+                hours: "Daily 5:30am-10pm",
+                amenities: "Free WiFi, Outlets, Mobile ordering, Consistent environment",
+                whyGreat: "Reliable, familiar workspace, major intersection location, long hours",
+                address: "3184 N Clark St"
+            },
+            {
+                name: "Starbucks Lincoln Ave",
+                category: "budget",
+                distance: 0.6,
+                price: "$5-15/day",
+                hours: "Daily 5:30am-9pm",
+                amenities: "Free WiFi, Outlets, Drive-thru, Mobile ordering",
+                whyGreat: "Convenient location, drive-thru option, reliable workspace",
+                address: "3356 N Lincoln Ave"
+            },
+            {
+                name: "Music Box Theatre Lobby",
+                category: "budget",
+                distance: 0.2,
+                price: "Free browsing, $15 for movie",
+                hours: "Daily 12pm-11pm (varies)",
+                amenities: "Historic 1929 theater, Unique atmosphere, Bar/lounge area added 2015",
+                whyGreat: "CLOSEST option! Historic cinema, inspiring creative environment, expanding with 3rd screen",
+                address: "3733 N Southport Ave"
+            },
+            {
+                name: "Loba Pastry + Coffee",
+                category: "budget",
+                distance: 0.3,
+                price: "$5-15/day",
+                hours: "Daily 7am-3pm",
+                amenities: "James Beard nominated pastries, Latina-owned, Excellent coffee",
+                whyGreat: "Local gem, award-winning pastries, authentic neighborhood feel",
+                address: "3600 N Lincoln Ave"
+            },
+            {
+                name: "Cafe Deko",
+                category: "budget",
+                distance: 0.7,
+                price: "$5-15/day",
+                hours: "Daily 7am-6pm",
+                amenities: "Art Deco design, Elegant atmosphere, Popular with locals",
+                whyGreat: "Beautiful design, warm environment, good for hanging out and working",
+                address: "800 W Diversey Pkwy"
+            },
+            {
+                name: "Vigo Coffee Lincoln Ave",
+                category: "budget",
+                distance: 0.4,
+                price: "$5-15/day",
+                hours: "Daily 7am-5pm",
+                amenities: "Contemporary design, Pastries, Sandwiches, Mexican dishes, Second location",
+                whyGreat: "Attractive modern cafe, diverse menu, opened 2023",
+                address: "2800 N Lincoln Ave"
+            },
+            {
+                name: "Printer's Row Coffee",
+                category: "budget",
+                distance: 0.5,
+                price: "$5-15/day",
+                hours: "Daily 7am-6pm",
+                amenities: "On-site coffee roasting, Teas, Pastries, Donuts, Near theaters",
+                whyGreat: "Fresh roasted coffee, close to Apollo and Victory Gardens theaters",
+                address: "2842 N Lincoln Ave"
+            },
+            {
+                name: "Coffee Lab & Roasters",
+                category: "budget",
+                distance: 0.8,
+                price: "$5-15/day",
+                hours: "Daily 7am-5pm",
+                amenities: "On-site roasting, Kyoto cold brew, Specialty drinks, Quiet atmosphere",
+                whyGreat: "Serious coffee focus, smooth low-bitter coffee, quiet environment",
+                address: "1000 W Diversey Pkwy"
+            },
+            {
+                name: "Beermiscuous Lakeview",
+                category: "budget",
+                distance: 0.9,
+                price: "$8-20/day",
+                hours: "Daily 3pm-12am",
+                amenities: "Free WiFi, Fireplace, European cafe style, Craft beer focus",
+                whyGreat: "Unique concept - coffee shop for beer, cozy atmosphere, laptop-friendly",
+                address: "2812 N Lincoln Ave"
+            },
+            {
+                name: "Hotel Lincoln Lobby",
+                category: "budget",
+                distance: 0.6,
+                price: "Cost of coffee/food",
+                hours: "24/7",
+                amenities: "Lobby coffee bar, WiFi, Views of Lincoln Park, 24hr business center",
+                whyGreat: "Boutique hotel atmosphere, across from Lincoln Park, 24hr access",
+                address: "1816 N Clark St"
+            },
+            {
+                name: "Hotel Versey Lobby",
+                category: "budget",
+                distance: 0.5,
+                price: "Cost of coffee/food",
+                hours: "24/7",
+                amenities: "Modern lifestyle spaces, Local art, Jazz/rock history theme",
+                whyGreat: "Award-winning design, cultural theme, vibrant atmosphere",
+                address: "644 W Diversey Pkwy"
+            },
+            {
+                name: "City Suites Hotel Lobby",
+                category: "budget",
+                distance: 0.3,
+                price: "Cost of coffee/food",
+                hours: "24/7",
+                amenities: "Art Deco design, Historic building, Close to L train",
+                whyGreat: "Boutique hotel, Art Deco aesthetic, steps from Belmont L station",
+                address: "933 W Belmont Ave"
+            },
+            {
+                name: "Inn at Lincoln Park Lobby",
+                category: "budget",
+                distance: 0.4,
+                price: "Cost of coffee/food",
+                hours: "24/7",
+                amenities: "24hr coffee/tea service, Free WiFi, European style, Historic building",
+                whyGreat: "Free 24hr coffee service, European charm, 1900s architectural details",
+                address: "601 W Diversey Pkwy"
+            },
+            {
+                name: "Lincoln Park Branch Library",
+                category: "free",
+                distance: 0.8,
+                price: "Free",
+                hours: "Mon-Thu 9-9, Fri-Sat 9-5, Sun 1-5",
+                amenities: "Free WiFi, Study rooms, Computer access, Quiet zones",
+                whyGreat: "Traditional library setting, bookable study rooms, completely free",
+                address: "1150 W Fullerton Pkwy"
+            },
+            {
+                name: "Lincoln Belmont Branch Library",
+                category: "free",
+                distance: 1.2,
+                price: "Free",
+                hours: "Mon-Thu 9-9, Fri-Sat 9-5, Sun 1-5",
+                amenities: "Free WiFi, Study rooms, Meeting rooms, Accessible workstations",
+                whyGreat: "Lakeview location, study room booking available, newer facility",
+                address: "1659 W Melrose St"
+            },
+            {
+                name: "Lincoln Park Cultural Center",
+                category: "free",
+                distance: 1.1,
+                price: "Free",
+                hours: "Varies by program",
+                amenities: "Community meeting spaces, Cultural programming, Historic building",
+                whyGreat: "Beautiful 1927 Georgian Revival building, quiet community spaces",
+                address: "2045 N Lincoln Park West"
+            },
+            {
+                name: "DePaul University Lincoln Park Campus",
+                category: "free",
+                distance: 1.4,
+                price: "Free (limited access)",
+                hours: "24/7 (varies by building)",
+                amenities: "Library access, The Quad, Student Center, WiFi",
+                whyGreat: "Beautiful campus setting, multiple study environments, outdoor options",
+                address: "2320 N Kenmore Ave"
+            },
+            {
+                name: "Intelligentsia Lakeview",
+                category: "budget",
+                distance: 1.0,
+                price: "$5-15/day",
+                hours: "Daily 6am-8pm",
+                amenities: "Large back tables, High-quality coffee, Busy atmosphere",
+                whyGreat: "Premium coffee chain, good for social work environment when you need human interaction",
+                address: "3123 N Broadway"
+            },
+            {
+                name: "The Coffee Studio",
+                category: "budget",
+                distance: 1.1,
+                price: "$5-15/day",
+                hours: "Daily 7am-5pm",
+                amenities: "Brick walls, Wooden tables, Plants, Cozy shared workspace feel",
+                whyGreat: "Small and cozy, feels like shared workspace, plenty of outlets",
+                address: "1621 N Milwaukee Ave"
+            },
+            {
+                name: "Hexe Coffee Co",
+                category: "budget",
+                distance: 1.8,
+                price: "$5-15/day",
+                hours: "Daily 7am-9pm",
+                amenities: "Large industrial space, Outstanding pastries, Patio, Serves alcohol",
+                whyGreat: "Tons of space, great for day-to-night transition, excellent pastries",
+                address: "2057 N Clybourn Ave"
+            },
+            {
+                name: "Osmium Coffee Bar",
+                category: "budget",
+                distance: 1.0,
+                price: "$5-15/day",
+                hours: "7am-6pm daily",
+                amenities: "Free WiFi, Window seats, Outdoor patio, Free refills on drip coffee",
+                whyGreat: "Popular with digital nomads, vibrant atmosphere, cost-effective for extended sessions",
+                address: "1117 W Belmont Ave"
+            },
+            {
+                name: "The Bourgeois Pig Cafe",
+                category: "budget",
+                distance: 0.7,
+                price: "$5-15/day",
+                hours: "7am-10pm daily",
+                amenities: "Free WiFi, 2-level seating, Literary-themed rooms, Outdoor areas",
+                whyGreat: "Unique 1890s row house, old-world European charm, ample seating",
+                address: "738 W Fullerton Ave"
+            },
+            {
+                name: "Vigo Coffee",
+                category: "budget",
+                distance: 0.9,
+                price: "$5-15/day",
+                hours: "7am-5pm daily",
+                amenities: "Strong WiFi, Big windows, Free conference room, Natural light",
+                whyGreat: "Rarely crowded, productive atmosphere, reservable conference room",
+                address: "2024 N Halsted St"
+            },
+            {
+                name: "Pedestrian Coffee",
+                category: "budget",
+                distance: 1.3,
+                price: "$5-15/day",
+                hours: "7am-5pm daily",
+                amenities: "Long tables, Outlets, Quiet atmosphere, Group-friendly",
+                whyGreat: "Perfect for spreading out, near great food options, productive environment",
+                address: "2347 N Lincoln Ave"
+            },
+            {
+                name: "Heritage Outpost",
+                category: "budget",
+                distance: 1.1,
+                price: "$5-15/day",
+                hours: "7am-6pm daily",
+                amenities: "Minimalist design, Big windows, Specialty coffee, Pastries from Bang Bang",
+                whyGreat: "Calming atmosphere, great natural light, excellent coffee quality",
+                address: "2959 N Lincoln Ave"
+            },
+            {
+                name: "Platform Coworking Ravenswood",
+                category: "budget",
+                distance: 2.8,
+                price: "$199+/month",
+                hours: "24/7 access",
+                amenities: "Conference room, Phone booths, Coffee/tea, Private patio, Mail service",
+                whyGreat: "One of Chicago's first coworking spaces, quiet neighborhood, 24/7 access",
+                address: "4422 N Ravenswood Ave"
+            },
+            {
+                name: "DeskLabs Lakeview",
+                category: "budget",
+                distance: 1.5,
+                price: "Day passes + monthly options",
+                hours: "24/7 access for members",
+                amenities: "Rooftop terrace, Standing desks, Phone booths, 300 MBPS fiber, Bottomless coffee",
+                whyGreat: "Historic building, flexible options, excellent amenities, rooftop with city views",
+                address: "3033 N Clark St"
+            },
+            {
+                name: "Regus Lincoln Park",
+                category: "premium",
+                distance: 1.3,
+                price: "$299/month",
+                hours: "24/7 access",
+                amenities: "Hot desks, Dedicated desks, Conference rooms, Business lounge",
+                whyGreat: "Professional environment, Fortune 500 companies nearby, convenient location",
+                address: "939 W North Ave"
+            },
+            {
+                name: "Three Cities Social",
+                category: "premium",
+                distance: 3.2,
+                price: "$199/month",
+                hours: "7am-1am daily",
+                amenities: "Private work rooms, Gym, Library, Dining room, Bottomless coffee, Social events",
+                whyGreat: "Social club with coworking, networking opportunities, diverse programming",
+                address: "320 W Ohio St"
+            },
+            {
+                name: "Hotel Lincoln Lobby",
+                category: "budget",
+                distance: 0.6,
+                price: "Cost of coffee/food",
+                hours: "24/7",
+                amenities: "Lobby coffee bar, WiFi, Views of Lincoln Park",
+                whyGreat: "Boutique hotel atmosphere, across from Lincoln Park, casual work environment",
+                address: "1816 N Clark St"
+            },
+            {
+                name: "Lincoln Park Zoo Member Lounge",
+                category: "museum",
+                distance: 0.9,
+                price: "$69-189/year",
+                hours: "Zoo hours (9am-5pm typically)",
+                amenities: "Member lounge, Best bathroom, Quiet space, Free parking (higher tiers)",
+                whyGreat: "Unique setting, very affordable annually, peaceful environment",
+                address: "2001 N Clark St"
+            },
+            {
+                name: "Peggy Notebaert Nature Museum",
+                category: "museum",
+                distance: 1.0,
+                price: "$100/year household",
+                hours: "9am-5pm daily",
+                amenities: "Floor-to-ceiling windows, Natural setting, Prairie views, City skyline views",
+                whyGreat: "Inspiring natural environment, excellent value, in your neighborhood",
+                address: "2430 N Cannon Dr"
+            },
+            {
+                name: "Chicago History Museum",
+                category: "museum",
+                distance: 1.4,
+                price: "$100/year individual",
+                hours: "9:30am-4:30pm Mon-Sat",
+                amenities: "Free parking, Digital archive access, Member events, Quiet environment",
+                whyGreat: "Close proximity, free parking, educational environment, historical setting",
+                address: "1601 N Clark St"
+            },
+            {
+                name: "Art Institute of Chicago",
+                category: "museum",
+                distance: 4.2,
+                price: "$115/year",
+                hours: "10am-5pm daily",
+                amenities: "Member Bar with free coffee/tea, City views, Early access, Parking discounts",
+                whyGreat: "World-class art for inspiration, member bar with amazing views, prestigious setting",
+                address: "111 S Michigan Ave"
+            },
+            {
+                name: "Chicago Cultural Center",
+                category: "free",
+                distance: 4.0,
+                price: "Free",
+                hours: "10am-5pm daily",
+                amenities: "Free WiFi, Beautiful architecture, Tiffany dome, Cultural programming",
+                whyGreat: "Stunning historic building, completely free, inspiring cultural environment",
+                address: "78 E Washington St"
+            }
+        ];
+
+        let currentSort = { column: null, direction: 'asc' };
+        let filteredSpaces = [...spaces];
+
+        function renderTable() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            filteredSpaces.forEach(space => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${space.name}</strong><br><small style="color: #666;">${space.address}</small></td>
+                    <td><span class="category ${space.category}">${space.category}</span></td>
+                    <td class="distance">${space.distance} mi</td>
+                    <td class="price">${space.price}</td>
+                    <td><small>${space.hours}</small></td>
+                    <td class="amenities"><small>${space.amenities}</small></td>
+                    <td><small>${space.whyGreat}</small></td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            updateStats();
+        }
+
+        function updateStats() {
+            const total = filteredSpaces.length;
+            const freeCount = filteredSpaces.filter(s => s.category === 'free').length;
+            const avgDist = filteredSpaces.reduce((sum, s) => sum + s.distance, 0) / total;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('freeCount').textContent = freeCount;
+            document.getElementById('avgDistance').textContent = total > 0 ? avgDist.toFixed(1) + ' mi' : '0 mi';
+        }
+
+        function sortTable(column) {
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+
+            filteredSpaces.sort((a, b) => {
+                let aVal = a[column];
+                let bVal = b[column];
+
+                if (column === 'distance') {
+                    aVal = parseFloat(aVal);
+                    bVal = parseFloat(bVal);
+                } else if (typeof aVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = bVal.toLowerCase();
+                }
+
+                if (aVal < bVal) return currentSort.direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return currentSort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            // Update sort indicators
+            document.querySelectorAll('th').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+            
+            const currentTh = document.querySelector(`th[data-column="${column}"]`);
+            if (currentTh) {
+                currentTh.classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+            }
+
+            renderTable();
+        }
+
+        function filterTable() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const distanceFilter = parseFloat(document.getElementById('distanceFilter').value) || Infinity;
+
+            filteredSpaces = spaces.filter(space => {
+                const matchesSearch = !searchTerm || 
+                    space.name.toLowerCase().includes(searchTerm) ||
+                    space.amenities.toLowerCase().includes(searchTerm) ||
+                    space.whyGreat.toLowerCase().includes(searchTerm) ||
+                    space.address.toLowerCase().includes(searchTerm);
+
+                const matchesCategory = !categoryFilter || space.category === categoryFilter;
+                const matchesDistance = space.distance <= distanceFilter;
+
+                return matchesSearch && matchesCategory && matchesDistance;
+            });
+
+            renderTable();
+        }
+
+        // Event listeners
+        document.querySelectorAll('th.sortable').forEach(th => {
+            th.addEventListener('click', () => {
+                sortTable(th.dataset.column);
+            });
+        });
+
+        document.getElementById('searchBox').addEventListener('input', filterTable);
+        document.getElementById('categoryFilter').addEventListener('change', filterTable);
+        document.getElementById('distanceFilter').addEventListener('change', filterTable);
+
+        // Initial render
+        renderTable();
+        
+        // Default sort by distance
+        sortTable('distance');
+    </script>
+</body>
+</html>
