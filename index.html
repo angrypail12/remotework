@@ -286,6 +286,7 @@
     </div>
 
     <script>
+        // Define the data first
         const spaces = [
             {
                 name: "Capital One Cafe Southport",
@@ -296,15 +297,6 @@
                 amenities: "Free WiFi, Outlets, Community room, Verve Coffee, 50% off drinks for Capital One customers",
                 whyGreat: "Closest option! Designed as coworking space, free community meeting room, professional environment",
                 address: "3540 N Southport Ave"
-            {
-                name: "Doppio Coffee House",
-                category: "budget",
-                distance: 0.6,
-                price: "$5-15/day",
-                hours: "Daily 7am-4pm",
-                amenities: "Local coffee roaster, Neighborhood feel, Good seating",
-                whyGreat: "Local independent roaster, authentic neighborhood atmosphere",
-                address: "3054 N Greenview Ave"
             },
             {
                 name: "Starbucks Clark & Belmont",
@@ -507,6 +499,16 @@
                 address: "2057 N Clybourn Ave"
             },
             {
+                name: "Doppio Coffee House",
+                category: "budget",
+                distance: 0.6,
+                price: "$5-15/day",
+                hours: "Daily 7am-4pm",
+                amenities: "Local coffee roaster, Neighborhood feel, Good seating",
+                whyGreat: "Local independent roaster, authentic neighborhood atmosphere",
+                address: "3054 N Greenview Ave"
+            },
+            {
                 name: "Osmium Coffee Bar",
                 category: "budget",
                 distance: 1.0,
@@ -597,16 +599,6 @@
                 address: "320 W Ohio St"
             },
             {
-                name: "Hotel Lincoln Lobby",
-                category: "budget",
-                distance: 0.6,
-                price: "Cost of coffee/food",
-                hours: "24/7",
-                amenities: "Lobby coffee bar, WiFi, Views of Lincoln Park",
-                whyGreat: "Boutique hotel atmosphere, across from Lincoln Park, casual work environment",
-                address: "1816 N Clark St"
-            },
-            {
                 name: "Lincoln Park Zoo Member Lounge",
                 category: "museum",
                 distance: 0.9,
@@ -662,7 +654,14 @@
         let filteredSpaces = [...spaces];
 
         function renderTable() {
+            console.log('Rendering table with', filteredSpaces.length, 'spaces');
             const tableBody = document.getElementById('tableBody');
+            
+            if (!tableBody) {
+                console.error('tableBody element not found');
+                return;
+            }
+            
             tableBody.innerHTML = '';
 
             filteredSpaces.forEach(space => {
@@ -687,9 +686,13 @@
             const freeCount = filteredSpaces.filter(s => s.category === 'free').length;
             const avgDist = filteredSpaces.reduce((sum, s) => sum + s.distance, 0) / total;
 
-            document.getElementById('totalCount').textContent = total;
-            document.getElementById('freeCount').textContent = freeCount;
-            document.getElementById('avgDistance').textContent = total > 0 ? avgDist.toFixed(1) + ' mi' : '0 mi';
+            const totalElement = document.getElementById('totalCount');
+            const freeElement = document.getElementById('freeCount');
+            const avgElement = document.getElementById('avgDistance');
+            
+            if (totalElement) totalElement.textContent = total;
+            if (freeElement) freeElement.textContent = freeCount;
+            if (avgElement) avgElement.textContent = total > 0 ? avgDist.toFixed(1) + ' mi' : '0 mi';
         }
 
         function sortTable(column) {
@@ -731,9 +734,18 @@
         }
 
         function filterTable() {
-            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
-            const categoryFilter = document.getElementById('categoryFilter').value;
-            const distanceFilter = parseFloat(document.getElementById('distanceFilter').value) || Infinity;
+            const searchBox = document.getElementById('searchBox');
+            const categoryFilter = document.getElementById('categoryFilter');
+            const distanceFilter = document.getElementById('distanceFilter');
+            
+            if (!searchBox || !categoryFilter || !distanceFilter) {
+                console.error('Filter elements not found');
+                return;
+            }
+            
+            const searchTerm = searchBox.value.toLowerCase();
+            const categoryValue = categoryFilter.value;
+            const distanceValue = parseFloat(distanceFilter.value) || Infinity;
 
             filteredSpaces = spaces.filter(space => {
                 const matchesSearch = !searchTerm || 
@@ -742,8 +754,8 @@
                     space.whyGreat.toLowerCase().includes(searchTerm) ||
                     space.address.toLowerCase().includes(searchTerm);
 
-                const matchesCategory = !categoryFilter || space.category === categoryFilter;
-                const matchesDistance = space.distance <= distanceFilter;
+                const matchesCategory = !categoryValue || space.category === categoryValue;
+                const matchesDistance = space.distance <= distanceValue;
 
                 return matchesSearch && matchesCategory && matchesDistance;
             });
@@ -751,22 +763,33 @@
             renderTable();
         }
 
-        // Event listeners
-        document.querySelectorAll('th.sortable').forEach(th => {
-            th.addEventListener('click', () => {
-                sortTable(th.dataset.column);
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing...');
+            
+            // Event listeners for sorting
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.addEventListener('click', () => {
+                    sortTable(th.dataset.column);
+                });
             });
+
+            // Event listeners for filtering
+            const searchBox = document.getElementById('searchBox');
+            const categoryFilter = document.getElementById('categoryFilter');
+            const distanceFilter = document.getElementById('distanceFilter');
+            
+            if (searchBox) searchBox.addEventListener('input', filterTable);
+            if (categoryFilter) categoryFilter.addEventListener('change', filterTable);
+            if (distanceFilter) distanceFilter.addEventListener('change', filterTable);
+
+            // Initial render
+            console.log('Initial render with', spaces.length, 'spaces');
+            renderTable();
+            
+            // Default sort by distance
+            sortTable('distance');
         });
-
-        document.getElementById('searchBox').addEventListener('input', filterTable);
-        document.getElementById('categoryFilter').addEventListener('change', filterTable);
-        document.getElementById('distanceFilter').addEventListener('change', filterTable);
-
-        // Initial render
-        renderTable();
-        
-        // Default sort by distance
-        sortTable('distance');
     </script>
 </body>
 </html>
